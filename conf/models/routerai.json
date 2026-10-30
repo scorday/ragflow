@@ -1,0 +1,96 @@
+{
+  "name": "RouterAI",
+  "rank": 988,
+  "url": {
+    "default": "https://routerai.ru/api/v1"
+  },
+  "url_hint": "https://routerai.ru/api/v1",
+  "url_suffix": {
+    "chat": "chat/completions",
+    "models": "models",
+    "embedding": "embeddings",
+    "decision": "decisions",
+    "rerank": "rerank",
+    "asr": "audio/transcriptions",
+    "tts": "audio/speech"
+  },
+  "class": "openai-api-compatible",
+  "models": [
+    {
+      "name": "deepseek/deepseek-v4-flash",
+      "context_length": 1048576,
+      "model_types": [
+        "chat"
+      ],
+      "tools": {
+        "support": true
+      }
+    },
+    {
+      "name": "openai/text-embedding-3-small",
+      "context_length": 8192,
+      "model_types": [
+        "embedding"
+      ],
+      "max_dimension": 1536,
+      "max_batch_size": 64,
+      "tokenizer": "cl100k_base"
+    },
+    {
+      "name": "openai/text-embedding-3-large",
+      "context_length": 8192,
+      "model_types": [
+        "embedding"
+      ],
+      "max_dimension": 3072,
+      "max_batch_size": 64,
+      "tokenizer": "cl100k_base"
+    },
+    {
+      "name": "baai/bge-m3",
+      "context_length": 8192,
+      "model_types": [
+        "embedding"
+      ],
+      "max_dimension": 1024,
+      "max_batch_size": 32,
+      "tokenizer": "xlmr-spm"
+    },
+    {
+      "name": "~typesafe/jev-latest",
+      "context_length": 32768,
+      "model_types": [
+        "decision"
+      ]
+    },
+    {
+      "name": "qwen/qwen3-vl-8b-instruct",
+      "context_length": 262144,
+      "model_types": [
+        "chat",
+        "vision"
+      ]
+    },
+    {
+      "name": "qwen/qwen3-asr-1.7b",
+      "context_length": 0,
+      "model_types": [
+        "asr"
+      ]
+    },
+    {
+      "name": "qwen/qwen3-reranker-8b",
+      "context_length": 40960,
+      "model_types": [
+        "rerank"
+      ]
+    },
+    {
+      "name": "fish-audio/drama-3",
+      "context_length": 0,
+      "model_types": [
+        "tts"
+      ]
+    }
+  ]
+}

@@ -221,13 +221,15 @@ func buildDecisionBackendFromModel(ctx context.Context, scope decisionScope, mod
 	// The model row carries no tenant column, so ownership is checked through
 	// its provider. Skipping the check when the run has no tenant is deliberate:
 	// a CLI or test run has no tenant to match and must not lose its judge.
-	if scope.tenantID != "" {
-		var provider entity.TenantModelProvider
-		if err := dao.DB.Where("id = ?", instance.ProviderID).First(&provider).Error; err != nil || provider.TenantID != scope.tenantID {
-			common.WarnCtx(ctx, "agentic_rag: decision model belongs to another tenant, falling back to the env backend",
-				zap.String("model_id", modelID), zap.String("tenant_id", scope.tenantID))
-			return nil
-		}
+	var provider entity.TenantModelProvider
+	if err := dao.DB.Where("id = ?", instance.ProviderID).First(&provider).Error; err != nil {
+		common.WarnCtx(ctx, "agentic_rag: decision model provider not found, falling back to the env backend", zap.Error(err))
+		return nil
+	}
+	if scope.tenantID != "" && provider.TenantID != scope.tenantID {
+		common.WarnCtx(ctx, "agentic_rag: decision model belongs to another tenant, falling back to the env backend",
+			zap.String("model_id", modelID), zap.String("tenant_id", scope.tenantID))
+		return nil
 	}
 
 	var extra map[string]string
@@ -253,7 +255,11 @@ func buildDecisionBackendFromModel(ctx context.Context, scope decisionScope, mod
 		return nil
 	}
 
-	backend := newDecisionBackend(joinDecisionURL(baseURL, defaultDecisionURL), key, model.ModelName)
+	path := "systemone"
+	if config := dao.GetModelProviderManager().FindProvider(provider.ProviderName); config != nil && config.URLSuffix.Decision != "" {
+		path = config.URLSuffix.Decision
+	}
+	backend := newDecisionBackend(joinDecisionURL(baseURL, path), key, model.ModelName)
 	common.InfoCtx(ctx, "agentic_rag: decision model resolved from configuration",
 		zap.String("model_id", modelID),
 		zap.String("model_name", model.ModelName),
@@ -264,14 +270,16 @@ func buildDecisionBackendFromModel(ctx context.Context, scope decisionScope, mod
 	return backend
 }
 
-// joinDecisionURL appends the System One path to the instance's base URL,
-// tolerating a base URL that already carries it.
-func joinDecisionURL(baseURL, fallbackURL string) string {
+// joinDecisionURL appends the provider's decision path unless already present.
+func joinDecisionURL(baseURL, path string) string {
 	base := strings.TrimSuffix(strings.TrimSpace(baseURL), "/")
 	if base == "" {
-		return fallbackURL
+		return defaultDecisionURL
 	}
-	path := "systemone"
+	path = strings.Trim(path, "/")
+	if path == "" {
+		return base
+	}
 	if idx := strings.LastIndex(base, "/"); idx >= 0 {
 		if strings.EqualFold(base[idx+1:], path) {
 			return base

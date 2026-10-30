@@ -32,6 +32,21 @@ func TestOpenAICompatibleProvidersExtractStreamingUsage(t *testing.T) {
 		path string
 	}{
 		{
+			name: "routerai",
+			new: func(baseURL string) ModelDriver {
+				config, err := decodeProviderConfig(readProviderConfig(t, "routerai.json"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				driver, err := NewModelFactory().CreateModelDriver(config.Name, config.URL, config.URLSuffix)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return driver.NewInstance(map[string]string{"default": baseURL})
+			},
+			path: "/chat/completions",
+		},
+		{
 			name: "siliconflow",
 			new: func(baseURL string) ModelDriver {
 				return NewSiliconflowModel(map[string]string{"default": baseURL}, URLSuffix{Chat: "chat/completions"})

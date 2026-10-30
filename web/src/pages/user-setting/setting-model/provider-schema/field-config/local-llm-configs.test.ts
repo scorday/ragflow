@@ -10,6 +10,33 @@ jest.mock('@/components/dynamic-form', () => ({
   },
 }));
 
+describe('RouterAI provider configuration', () => {
+  it('preserves selected chat and embedding models when saving an instance', () => {
+    const config = LocalLlmConfigs[LLMFactory.RouterAI];
+    const modelInfo = [
+      { model_name: 'deepseek/deepseek-v4-flash', model_type: ['chat'] },
+      {
+        model_name: 'openai/text-embedding-3-small',
+        model_type: ['embedding'],
+      },
+    ];
+    expect(LIST_MODEL_PROVIDERS.has(LLMFactory.RouterAI)).toBe(true);
+    expect(
+      config.fields.find((field) => field.name === 'api_key'),
+    ).toMatchObject({
+      required: true,
+    });
+    expect(
+      config.submitTransform?.({
+        instance_name: 'routerai',
+        api_key: 'test-key',
+        base_url: 'https://routerai.ru/api/v1',
+        model_info: modelInfo,
+      }),
+    ).toMatchObject({ llm_factory: 'RouterAI', model_info: modelInfo });
+  });
+});
+
 describe('FunASR local provider configuration', () => {
   it('uses the model picker backed by the FunASR models endpoint', () => {
     expect(LIST_MODEL_PROVIDERS.has(LLMFactory.FunASR)).toBe(true);
@@ -60,9 +87,9 @@ describe('MWS provider configuration', () => {
     expect(
       config.fields.find((field) => field.name === 'api_key'),
     ).toMatchObject({ label: 'mwsToken', required: true });
-    expect(
-      config.fields.some((field) => field.name === 'provider_order'),
-    ).toBe(false);
+    expect(config.fields.some((field) => field.name === 'provider_order')).toBe(
+      false,
+    );
 
     expect(
       config.submitTransform?.({

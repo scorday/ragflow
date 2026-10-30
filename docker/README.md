@@ -158,6 +158,12 @@ The Go services use NATS JetStream for ingestion, synchronization, memory, and k
 
 The optional `tei-cpu` and `tei-gpu` profiles start a local text-embeddings-inference service. Its memory requirement depends on the model, runtime backend, precision, batch-token limit, and concurrency. The `tei-cpu` profile uses system RAM; the `tei-gpu` profile primarily uses GPU memory and also consumes system RAM. Verify model loading and peak request usage on the target hardware, and leave additional host memory for RAGFlow, the document engine, databases, and operating system.
 
+### RouterAI
+
+In the model provider settings, select **RouterAI**, create an instance, and enter your RouterAI API key. The default API address is `https://routerai.ru/api/v1`. Use **List Models** to choose models, then select the defaults for your account. The bundled catalog includes `deepseek/deepseek-v4-flash`, `openai/text-embedding-3-small`, `openai/text-embedding-3-large`, `baai/bge-m3`, and the decision model `~typesafe/jev-latest`. Select Jev in the **Decision model** field to judge retrieved passages through `/api/v1/decisions`. These models run remotely and require a funded RouterAI account; no local model container is needed. See the [RouterAI documentation](https://routerai.ru/docs/guides) for account and API setup.
+
+The catalog also includes `qwen/qwen3-vl-8b-instruct` for vision, `qwen/qwen3-asr-1.7b` for transcription, `qwen/qwen3-reranker-8b` for reranking, and `fish-audio/drama-3` for speech synthesis. The provider uses `/rerank`, `/audio/transcriptions`, and `/audio/speech` under the same API base address.
+
 
 ### DeepDoc (in-process)
 

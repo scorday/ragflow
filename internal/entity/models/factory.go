@@ -55,7 +55,7 @@ func (f *ModelFactory) CreateModelDriver(providerName string, baseURL map[string
 		return NewVolcEngine(baseURL, urlSuffix), nil
 	case "vllm":
 		return NewVllmModel(baseURL, urlSuffix), nil
-	case "openai-api-compatible":
+	case "openai-api-compatible", "routerai":
 		return NewOpenAIAPICompatibleModel(baseURL, urlSuffix), nil
 	case "systemone":
 		// Not chat-completions-shaped: this provider speaks TypeSafe System One,

@@ -39,6 +39,7 @@ export enum LLMFactory {
   Gemini = 'Gemini',
   Groq = 'Groq',
   OpenRouter = 'OpenRouter',
+  RouterAI = 'RouterAI',
   LocalAI = 'LocalAI',
   StepFun = 'StepFun',
   NVIDIA = 'NVIDIA',
@@ -146,6 +147,7 @@ export const IconMap = {
   [LLMFactory.Gemini]: 'gemini',
   [LLMFactory.Groq]: 'groq-next',
   [LLMFactory.OpenRouter]: 'open-router',
+  [LLMFactory.RouterAI]: 'openai-api',
   [LLMFactory.LocalAI]: 'local-ai',
   [LLMFactory.StepFun]: 'stepfun',
   [LLMFactory.NVIDIA]: 'nvidia',
@@ -303,6 +305,7 @@ export const APIMapUrl = {
   [LLMFactory.AzureOpenAI]:
     'https://portal.azure.com/#create/Microsoft.CognitiveServicesOpenAI',
   [LLMFactory.OpenRouter]: 'https://openrouter.ai/keys',
+  [LLMFactory.RouterAI]: 'https://routerai.ru',
   [LLMFactory.XunFeiSpark]: 'https://maas.xfyun.cn/apikey',
   [LLMFactory.MiniMax]:
     'https://platform.minimaxi.com/user-center/basic-information',

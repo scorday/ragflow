@@ -31,6 +31,7 @@ const (
 	modelTypeVision    = "vision"
 	modelTypeTTS       = "tts"
 	modelTypeOCR       = "ocr"
+	modelTypeDecision  = "decision"
 )
 
 const (
@@ -45,8 +46,7 @@ var (
 )
 
 // InferModelTypes derives RAGFlow LLM model types from the model name using
-// keyword heuristics, covering all seven supported types: chat, embedding,
-// rerank, asr, tts, ocr, and vision (always combined with chat).
+// keyword heuristics, including decision models and vision combined with chat.
 func InferModelTypes(modelName string) []string {
 	modelName = strings.TrimSpace(modelName)
 	if modelName == "" {
@@ -103,6 +103,8 @@ func inferModelTypesByName(modelName string) []string {
 	}
 
 	switch {
+	case hasToken("jev"):
+		return []string{modelTypeDecision}
 	case hasToken("rerank", "reranker"):
 		return []string{modelTypeRerank}
 	case hasToken("ocr"):

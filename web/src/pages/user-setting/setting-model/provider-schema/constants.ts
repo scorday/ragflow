@@ -36,6 +36,7 @@ export const LIST_MODEL_PROVIDERS = new Set<string>([
   LLMFactory.AIMLAPI,
   LLMFactory.Ollama,
   LLMFactory.OpenRouter,
+  LLMFactory.RouterAI,
   LLMFactory.VLLM,
   LLMFactory.OpenAiAPICompatible,
   LLMFactory.MWS,

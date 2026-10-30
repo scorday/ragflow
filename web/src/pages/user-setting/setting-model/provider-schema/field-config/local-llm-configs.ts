@@ -24,6 +24,32 @@ import { buildModelInfoFromValues } from './utils';
  * Used for scenarios after OllamaModal merge
  */
 export const LocalLlmConfigs: Record<string, ProviderConfig> = {
+  [LLMFactory.RouterAI]: buildLocalConfig(
+    LLMFactory.RouterAI,
+    'RouterAI',
+    false,
+    [
+      {
+        name: 'api_key',
+        label: 'apiKey',
+        type: FormFieldType.Password,
+        required: true,
+        placeholder: 'apiKeyMessage',
+        shouldRender: 'hideWhenInstanceExists',
+        autoComplete: 'new-password',
+        validation: { message: 'apiKeyMessage' },
+      },
+      {
+        name: 'base_url',
+        label: 'addLlmBaseUrl',
+        type: 'inputSelect',
+        required: false,
+        placeholder: 'baseUrlNameMessage',
+        shouldRender: 'hideWhenInstanceExists',
+      },
+    ],
+    'https://routerai.ru/docs/guides',
+  ),
   // aimlapi.com is a cloud OpenAI-compatible aggregator (like OpenRouter): it
   // uses the list picker, so it needs a config whose submitTransform forwards
   // `model_info` (the picker selection). Falling back to GenericApiKeyConfig

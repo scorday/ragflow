@@ -18,13 +18,17 @@ package agentic_rag
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 
+	"ragflow/internal/common"
 	"ragflow/internal/dao"
 	"ragflow/internal/entity"
 )
@@ -84,7 +88,7 @@ func TestJoinDecisionURL(t *testing.T) {
 		{"", defaultDecisionURL},
 	}
 	for _, c := range cases {
-		if got := joinDecisionURL(c.in, defaultDecisionURL); got != c.want {
+		if got := joinDecisionURL(c.in, "systemone"); got != c.want {
 			t.Errorf("joinDecisionURL(%q) = %q, want %q", c.in, got, c.want)
 		}
 	}
@@ -177,6 +181,59 @@ func TestResolveDecisionBackendUsesTenantDefault(t *testing.T) {
 	}
 	if want := "https://host.example/v1/systemone"; got.url != want {
 		t.Errorf("url = %q, want %q", got.url, want)
+	}
+}
+
+func TestRouterAIDecisionBackendUsesProviderEndpoint(t *testing.T) {
+	previous := common.AllowAnyHostForTest
+	common.AllowAnyHostForTest = true
+	t.Cleanup(func() { common.AllowAnyHostForTest = previous })
+	setupDecisionConfigDB(t)
+	db := dao.DB
+	providerID, instanceID, modelID := seedDecisionModel(t, db, "tenant-routerai", "~typesafe/jev-latest", int(entity.ModelTypeDecision))
+	called := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		if r.URL.Path != "/api/v1/decisions" {
+			t.Errorf("decision path = %s", r.URL.Path)
+		}
+		var request struct {
+			Model     string         `json:"model"`
+			Questions map[string]any `json:"questions"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Error(err)
+		}
+		if request.Model != "~typesafe/jev-latest" || len(request.Questions) == 0 {
+			t.Errorf("unexpected request: %+v", request)
+		}
+		answers := make(map[string]any)
+		for id := range request.Questions {
+			answers[id] = map[string]any{"type": "noul", "noul": 0.95}
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"answers": answers})
+	}))
+	defer server.Close()
+	if err := db.Model(&entity.TenantModelProvider{}).Where("id = ?", providerID).Update("provider_name", "RouterAI").Error; err != nil {
+		t.Fatal(err)
+	}
+	extra, err := json.Marshal(map[string]string{"base_url": server.URL + "/api/v1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := db.Model(&entity.TenantModelInstance{}).Where("id = ?", instanceID).Update("extra", string(extra)).Error; err != nil {
+		t.Fatal(err)
+	}
+	backend := buildDecisionBackendFromModel(t.Context(), decisionScope{tenantID: "tenant-routerai"}, modelID)
+	if backend == nil {
+		t.Fatal("configured RouterAI decision backend was not resolved")
+	}
+	probability, _, err := backend.ask(t.Context(), "How to reset a password?", "", "Use the reset password link.")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !called || probability != 0.95 {
+		t.Fatalf("decision call = %t, probability = %v", called, probability)
 	}
 }
 
